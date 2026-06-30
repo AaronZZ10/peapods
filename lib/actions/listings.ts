@@ -113,14 +113,19 @@ export async function getListings() {
   return data;
 }
 
-export async function getListingsInBounds(minLat: number, maxLat: number, minLng: number, maxLng: number) {
+export async function getListingsInBounds(
+  minLat: number,
+  maxLat: number,
+  minLng: number,
+  maxLng: number,
+) {
   const supabase = await createClient();
-  
+
   const { data, error } = await supabase.rpc("get_listings_in_bounds", {
     min_lat: minLat,
     max_lat: maxLat,
     min_lng: minLng,
-    max_lng: maxLng
+    max_lng: maxLng,
   });
 
   if (error) {

@@ -1,18 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { AddressAutocompleteInput } from "@/features/listings/AddressAutocompleteInput";
 import { createListing } from "@/lib/actions/listings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -23,8 +18,24 @@ import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Info, DollarSign, Calendar } from "lucide-react";
 
 export function CreateListingForm() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog
+      modal={false}
+      open={open}
+      onOpenChange={(nextOpen, eventDetails) => {
+        if (
+          !nextOpen &&
+          (eventDetails.reason === "outside-press" ||
+            eventDetails.reason === "focus-out")
+        ) {
+          return;
+        }
+
+        setOpen(nextOpen);
+      }}
+    >
       <DialogTrigger
         render={
           <Button
@@ -143,7 +154,7 @@ export function CreateListingForm() {
           </div>
 
           <div className="pt-4 border-t flex justify-end gap-3">
-            <DialogTrigger
+            <DialogClose
               render={
                 <Button variant="ghost" className="rounded-full">
                   Cancel
