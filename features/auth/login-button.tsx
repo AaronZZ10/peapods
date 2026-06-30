@@ -36,9 +36,9 @@ export function LoginButton() {
     <form action={loginWithGoogle}>
       <button
         type="submit"
-        className="bg-gray-900 text-white px-4 py-2 rounded text-sm"
+        className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
       >
-        Login with Google
+        Continue with Google
       </button>
     </form>
   );

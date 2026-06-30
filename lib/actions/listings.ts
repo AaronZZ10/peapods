@@ -4,6 +4,43 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+async function geocodeAddress(address: string) {
+  const query = new URLSearchParams({
+    q: address,
+    format: "jsonv2",
+    limit: "1",
+  });
+
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/search?${query.toString()}`,
+    {
+      cache: "no-store",
+      headers: {
+        "Accept-Language": "en",
+        "User-Agent": "PeaPods/1.0",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to geocode address");
+  }
+
+  const results = (await response.json()) as Array<{
+    lat: string;
+    lon: string;
+  }>;
+
+  if (!results.length) {
+    throw new Error("Address could not be geocoded");
+  }
+
+  return {
+    latitude: Number(results[0].lat),
+    longitude: Number(results[0].lon),
+  };
+}
+
 export async function createListing(formData: FormData) {
   const supabase = await createClient();
 
@@ -18,10 +55,9 @@ export async function createListing(formData: FormData) {
   const description = formData.get("description") as string;
   const price = Number(formData.get("price"));
   const address = formData.get("address") as string;
-  const latitude = Number(formData.get("latitude"));
-  const longitude = Number(formData.get("longitude"));
   const startDate = formData.get("startDate") as string;
   const endDate = formData.get("endDate") as string;
+  const { latitude, longitude } = await geocodeAddress(address);
 
   const { error } = await supabase.from("listings").insert({
     user_id: user.id,
@@ -67,21 +103,14 @@ export async function deleteListing(id: string) {
 export async function getListings() {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("listings")
-    .select("*, profiles(full_name, email)")
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.rpc("get_all_listings");
 
   if (error) {
     console.error("Error fetching listings:", error);
     return [];
   }
 
-  return data.map((listing: any) => ({
-    ...listing,
-    latitude: listing.location ? parseFloat(listing.location.match(/POINT\(([-\d.]+) ([-\d.]+)\)/)?.[2] || "0") : 0,
-    longitude: listing.location ? parseFloat(listing.location.match(/POINT\(([-\d.]+) ([-\d.]+)\)/)?.[1] || "0") : 0,
-  }));
+  return data;
 }
 
 export async function getListingsInBounds(minLat: number, maxLat: number, minLng: number, maxLng: number) {

@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { UserNav } from "@/features/auth/user-nav";
 import { LoginButton } from "@/features/auth/login-button";
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: "PeaPods - Sublease Marketplace",
@@ -15,18 +19,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", geist.variable)}>
       <body>
-        <header className="border-b">
-          <div className="max-w-5xl mx-auto py-4 flex items-center justify-between px-4">
-            <h1 className="text-xl font-bold">PeaPods</h1>
-            <div className="flex items-center gap-4">
+        <header className="sticky top-0 z-20 border-b border-white/60 bg-white/80 backdrop-blur">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+            <div className="flex items-center gap-3">
+              <div>
+                <p className="text-lg font-semibold tracking-tight text-slate-900">
+                  PeaPods
+                </p>
+                <p className="text-xs text-slate-500">
+                  Subleases for students and interns
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
               <UserNav />
               <LoginButton />
             </div>
           </div>
         </header>
-        <main className="max-w-5xl mx-auto py-8 px-4">{children}</main>
+        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+          {children}
+        </main>
       </body>
     </html>
   );
