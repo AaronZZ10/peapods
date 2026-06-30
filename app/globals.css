@@ -2,29 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "leaflet/dist/leaflet.css";
-@import "leaflet.markercluster/dist/MarkerCluster.css";
-@import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-
 @layer base {
   html {
     @apply scroll-smooth font-sans;
   }
 
   body {
-    @apply antialiased bg-background text-foreground;
-    background-image:
-      radial-gradient(
-        circle at top left,
-        rgba(191, 219, 254, 0.55),
-        transparent 28%
-      ),
-      radial-gradient(
-        circle at top right,
-        rgba(254, 240, 138, 0.4),
-        transparent 22%
-      ),
-      linear-gradient(to bottom, #f8fafc, #f8fafc);
+    @apply antialiased bg-slate-50 text-slate-900;
   }
 
   input,

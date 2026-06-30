@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./globals.css";
 import { UserNav } from "@/features/auth/user-nav";
 import { LoginButton } from "@/features/auth/login-button";
@@ -20,28 +23,29 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body>
-        <header className="sticky top-0 z-20 border-b border-white/60 bg-white/80 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-            <div className="flex items-center gap-3">
-              <div>
-                <p className="text-lg font-semibold tracking-tight text-slate-900">
-                  PeaPods
-                </p>
-                <p className="text-xs text-slate-500">
-                  Subleases for students and interns
-                </p>
+      <body className="bg-slate-50 text-slate-900 antialiased selection:bg-emerald-100 selection:text-emerald-900">
+        <div className="relative flex min-h-screen flex-col">
+          {/* Floating Pill Header */}
+          <header className="fixed inset-x-0 top-4 z-50 mx-auto w-full max-w-5xl px-4 sm:px-6">
+            <div className="flex h-16 items-center justify-between rounded-full border border-slate-200/60 bg-white/80 px-6 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col">
+                  <p className="text-xl font-black tracking-tight text-slate-900 leading-none">
+                    PeaPods.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <UserNav />
+                <LoginButton />
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <UserNav />
-              <LoginButton />
-            </div>
-          </div>
-        </header>
-        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-          {children}
-        </main>
+          </header>
+
+          <main className="flex-1 pt-32 pb-20 px-4 sm:px-6 mx-auto w-full max-w-6xl">
+            {children}
+          </main>
+        </div>
       </body>
     </html>
   );

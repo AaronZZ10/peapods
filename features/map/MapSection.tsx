@@ -28,12 +28,6 @@ interface MapSectionProps {
 export function MapSection({ initialListings }: MapSectionProps) {
   return (
     <section className="space-y-3">
-      <div>
-        <h3 className="text-2xl font-semibold">Map Discovery</h3>
-        <p className="text-sm text-gray-600">
-          Explore listings geographically before you browse the full list.
-        </p>
-      </div>
       <WorkingListingsMap initialListings={initialListings} />
     </section>
   );

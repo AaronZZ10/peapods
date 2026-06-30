@@ -4,7 +4,7 @@ import { ListingCard } from "@/features/listings/ListingCard";
 import { createClient } from "@/lib/supabase/server";
 import { MapSection } from "@/features/map/MapSection";
 import { Badge } from "@/components/ui/badge";
-import { Search, Map as MapIcon, ShieldCheck, Sparkles } from "lucide-react";
+import { Map as MapIcon, Sparkles } from "lucide-react";
 
 export default async function Home() {
   const listings = await getListings();
@@ -14,129 +14,92 @@ export default async function Home() {
   } = await supabase.auth.getUser();
 
   return (
-    <div className="space-y-16 pb-20">
+    <div className="space-y-24 pb-24">
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-[2.5rem] bg-emerald-600 px-6 py-12 text-white sm:px-12 sm:py-20">
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/50 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-emerald-400/30 blur-3xl" />
+      <section className="relative flex flex-col items-center justify-center pt-16 pb-12 text-center">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-100/40 via-slate-50 to-slate-50"></div>
 
-        <div className="relative z-10 grid gap-12 lg:grid-cols-2 lg:items-center">
-          <div className="space-y-8">
-            <Badge className="bg-emerald-400/20 text-emerald-50 hover:bg-emerald-400/30 border-none px-4 py-1 text-xs font-bold uppercase tracking-wider">
-              Student Sublease Network
-            </Badge>
-            <div className="space-y-4">
-              <h1 className="text-4xl font-black tracking-tight sm:text-6xl">
-                Your next home, <br />
-                <span className="text-emerald-200">found on the map.</span>
-              </h1>
-              <p className="max-w-xl text-lg text-emerald-50/80 leading-relaxed">
-                PeaPods is the trust-first marketplace for university students
-                and summer interns. No more sketchy listings—just clear dates,
-                verified locations, and student vibes.
-              </p>
+        <Badge
+          variant="outline"
+          className="mb-8 rounded-full border-slate-200 bg-white/50 px-4 py-1.5 text-sm font-medium text-slate-600 backdrop-blur-md"
+        >
+          <Sparkles className="mr-2 h-4 w-4 text-emerald-500" />
+          The Student Sublease Network
+        </Badge>
+
+        <h1 className="max-w-4xl text-balance text-5xl font-black tracking-tighter text-slate-900 sm:text-7xl lg:text-8xl">
+          Find your next home. <br />
+          <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+            Without the stress.
+          </span>
+        </h1>
+
+        <p className="mt-8 max-w-2xl text-balance text-lg text-slate-500 sm:text-xl">
+          PeaPods is the trust-first marketplace for university students and
+          summer interns. Clear dates, verified locations, and a seamless map
+          experience.
+        </p>
+
+        <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
+          {user ? (
+            <CreateListingForm />
+          ) : (
+            <div className="rounded-2xl border border-slate-200 bg-white/50 p-4 text-sm text-slate-600 backdrop-blur-md shadow-sm">
+              Sign in to post your sublease and reach thousands of students.
             </div>
-
-            <div className="flex flex-wrap gap-4">
-              {user ? (
-                <CreateListingForm />
-              ) : (
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-sm text-emerald-50">
-                  Sign in to post your sublease and reach thousands of students.
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              {
-                icon: MapIcon,
-                title: "Map Discovery",
-                desc: "Find stays exactly where you need to be.",
-                color: "bg-amber-400",
-              },
-              {
-                icon: ShieldCheck,
-                title: "Student Verified",
-                desc: "Trust-based matching for peace of mind.",
-                color: "bg-sky-400",
-              },
-              {
-                icon: Search,
-                title: "Fast Search",
-                desc: "Filter by budget, dates, and campus proximity.",
-                color: "bg-violet-400",
-              },
-              {
-                icon: Sparkles,
-                title: "Simple Setup",
-                desc: "Post your room in under 2 minutes.",
-                color: "bg-pink-400",
-              },
-            ].map((feature, i) => (
-              <div
-                key={i}
-                className="group rounded-3xl bg-white/10 backdrop-blur-sm border border-white/10 p-6 transition-all hover:bg-white/15"
-              >
-                <div
-                  className={`mb-4 inline-flex h-10 w-10 items-center justify-center rounded-2xl ${feature.color} text-white shadow-lg`}
-                >
-                  <feature.icon className="h-5 w-5" />
-                </div>
-                <h3 className="mb-1 font-bold text-white">{feature.title}</h3>
-                <p className="text-sm text-emerald-50/60 leading-snug">
-                  {feature.desc}
-                </p>
-              </div>
-            ))}
-          </div>
+          )}
+          <a
+            href="#map"
+            className="group flex h-11 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 hover:shadow-sm"
+          >
+            <MapIcon className="h-4 w-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
+            Explore the Map
+          </a>
         </div>
       </section>
 
       {/* Map Section */}
-      <section className="space-y-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-              Explore the Area
+      <section id="map" className="mx-auto max-w-6xl space-y-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between px-2">
+          <div className="space-y-1">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900">
+              Explore Stays
             </h2>
             <p className="text-slate-500">
-              Find the perfect spot near your campus or office.
+              Interactive map matching for the perfect location.
             </p>
           </div>
           <Badge
-            variant="outline"
-            className="w-fit border-slate-200 text-slate-500"
+            variant="secondary"
+            className="w-fit rounded-xl bg-slate-100 text-slate-600 border-none px-3 py-1"
           >
             {listings.length} Active Stays
           </Badge>
         </div>
-        <div className="overflow-hidden rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50">
+        <div className="overflow-hidden rounded-[2.5rem] border border-slate-200/60 bg-white shadow-sm ring-1 ring-slate-900/5">
           <MapSection initialListings={listings} />
         </div>
       </section>
 
       {/* Listings Grid */}
-      <section className="space-y-8">
-        <div className="flex items-center gap-4">
-          <div className="h-px flex-1 bg-slate-100" />
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-            Latest Stays
+      <section className="mx-auto max-w-6xl space-y-8">
+        <div className="flex items-center gap-6 px-2">
+          <h2 className="text-3xl font-black tracking-tight text-slate-900">
+            Latest Drops
           </h2>
-          <div className="h-px flex-1 bg-slate-100" />
+          <div className="h-px flex-1 bg-slate-200/60" />
         </div>
 
         {listings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed border-slate-200 bg-slate-50/50 py-20 text-center">
-            <div className="mb-4 rounded-full bg-slate-100 p-4">
+          <div className="flex flex-col items-center justify-center rounded-[2.5rem] border border-dashed border-slate-300 bg-slate-50/50 py-32 text-center">
+            <div className="mb-5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
               <MapIcon className="h-8 w-8 text-slate-400" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">
+            <h3 className="text-xl font-bold text-slate-900">
               No stays listed yet
             </h3>
-            <p className="text-sm text-slate-500">
-              Be the first to post a listing in this area!
+            <p className="mt-2 text-slate-500">
+              Be the first to drop a listing in your area!
             </p>
           </div>
         ) : (
