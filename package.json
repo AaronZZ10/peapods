@@ -20,7 +20,7 @@
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "lucide-react": "^0.487.0",
-    "next": "15.3.0",
+    "next": "^15.5.18",
     "radix-ui": "^1.6.1",
     "react": "19.1.1",
     "react-dom": "19.1.1",
@@ -36,7 +36,7 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "eslint": "^9.24.0",
-    "eslint-config-next": "15.3.0",
+    "eslint-config-next": "^15.5.18",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3"
