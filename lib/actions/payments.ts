@@ -82,8 +82,22 @@ export async function createReservationSession(listingId: string) {
 
 export async function confirmMockPayment(listingId: string) {
   const supabase = await createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  let user = authUser;
+  if (!user && process.env.NODE_ENV === "development") {
+    user = {
+      id: "mock-student-id-1234",
+      email: "mock-student@drexel.edu",
+      full_name: "Mock Student",
+    } as any;
+  }
+
   const { error } = await supabase.rpc("mark_listing_as_reserved", {
     target_listing_id: listingId,
+    reserver_id: user?.id || null,
   });
 
   if (error) {

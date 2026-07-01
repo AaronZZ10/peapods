@@ -159,3 +159,89 @@ export async function getListingsInBounds(
 
   return data;
 }
+
+export async function getUserListings() {
+  const supabase = await createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  let user = authUser;
+  if (!user && process.env.NODE_ENV === "development") {
+    user = { id: "mock-student-id-1234" } as any;
+  }
+
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("listings")
+    .select(`
+      id,
+      user_id,
+      title,
+      description,
+      price,
+      address,
+      start_date,
+      end_date,
+      images,
+      reserved,
+      reserved_by,
+      created_at
+    `)
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching user listings:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
+export async function getUserBookings() {
+  const supabase = await createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  let user = authUser;
+  if (!user && process.env.NODE_ENV === "development") {
+    user = { id: "mock-student-id-1234" } as any;
+  }
+
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("listings")
+    .select(`
+      id,
+      user_id,
+      title,
+      description,
+      price,
+      address,
+      start_date,
+      end_date,
+      images,
+      reserved,
+      reserved_by,
+      created_at,
+      profiles: user_id (
+        full_name,
+        email,
+        university,
+        avatar_url
+      )
+    `)
+    .eq("reserved_by", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching user bookings:", error);
+    return [];
+  }
+
+  return data || [];
+}

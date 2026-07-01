@@ -36,13 +36,15 @@ export async function POST(req: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const listingId = session.metadata?.listing_id;
+    const userId = session.metadata?.user_id;
 
     if (listingId) {
-      console.log(`Stripe reservation payment succeeded for listing: ${listingId}`);
+      console.log(`Stripe reservation payment succeeded for listing: ${listingId} by user: ${userId}`);
       
       // Call the SECURITY DEFINER RPC to bypass RLS and flag as reserved
       const { error } = await supabase.rpc("mark_listing_as_reserved", {
         target_listing_id: listingId,
+        reserver_id: userId || null,
       });
 
       if (error) {

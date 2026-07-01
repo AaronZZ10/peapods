@@ -72,6 +72,23 @@ export async function getMessages(listingId: string, otherUserId?: string) {
   // Development mock bypass using local JSON file
   if (user.id === "mock-student-id-1234" && process.env.NODE_ENV === "development") {
     const allMsgs = getMockMessagesFromFile();
+    let changed = false;
+    const updated = allMsgs.map((msg) => {
+      if (
+        msg.listing_id === listingId &&
+        msg.sender_id === targetUserId &&
+        msg.receiver_id === user.id &&
+        !msg.read
+      ) {
+        changed = true;
+        return { ...msg, read: true };
+      }
+      return msg;
+    });
+    if (changed) {
+      saveMockMessagesToFile(updated);
+    }
+
     return allMsgs.filter(
       (msg) =>
         msg.listing_id === listingId &&
@@ -79,6 +96,15 @@ export async function getMessages(listingId: string, otherUserId?: string) {
           (msg.sender_id === targetUserId && msg.receiver_id === user.id))
     );
   }
+
+  // Mark messages sent by the other user to the current user as read
+  await supabase
+    .from("messages")
+    .update({ read: true })
+    .eq("listing_id", listingId)
+    .eq("sender_id", targetUserId)
+    .eq("receiver_id", user.id)
+    .eq("read", false);
 
   // Fetch messages exchanged between current user and target user
   const { data, error } = await supabase
@@ -152,6 +178,7 @@ export async function sendMessage(listingId: string, content: string, otherUserI
       sender_id: user.id,
       receiver_id: receiverId,
       content,
+      read: false,
       created_at: new Date().toISOString(),
     };
     allMsgs.push(newMsg);
@@ -229,4 +256,160 @@ export async function getListingConversations(listingId: string) {
   }));
 
   return uniqueConversations;
+}
+
+export async function getUserConversations() {
+  const supabase = await createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  let user = authUser;
+  if (!user && process.env.NODE_ENV === "development") {
+    user = {
+      id: "mock-student-id-1234",
+      email: "mock-student@drexel.edu",
+      full_name: "Mock Student",
+    } as any;
+  }
+
+  if (!user) return [];
+
+  // In development, handle mock messages fallback
+  if (user.id === "mock-student-id-1234" && process.env.NODE_ENV === "development") {
+    const allMsgs = getMockMessagesFromFile();
+    const myMsgs = allMsgs.filter(
+      (msg) => msg.sender_id === user.id || msg.receiver_id === user.id
+    );
+
+    const threadsMap = new Map<string, any>();
+    const { data: listings } = await supabase.from("listings").select("*");
+    const { data: profiles } = await supabase.from("profiles").select("*");
+
+    for (const msg of myMsgs) {
+      const otherId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
+      const key = `${msg.listing_id}:${otherId}`;
+      const existing = threadsMap.get(key);
+      
+      if (!existing || new Date(msg.created_at) > new Date(existing.latest_message.created_at)) {
+        const listing = listings?.find((l) => l.id === msg.listing_id);
+        const profile = profiles?.find((p) => p.id === otherId);
+
+        threadsMap.set(key, {
+          listing_id: msg.listing_id,
+          other_user_id: otherId,
+          listing_title: listing?.title || "Sublease Room",
+          listing_images: listing?.images || [],
+          other_user_name: profile?.full_name || "Student Subletter",
+          other_user_university: profile?.university || "Verified Student",
+          other_user_avatar: profile?.avatar_url || null,
+          latest_message: msg,
+        });
+      }
+    }
+
+    return Array.from(threadsMap.values()).sort(
+      (a, b) => new Date(b.latest_message.created_at).getTime() - new Date(a.latest_message.created_at).getTime()
+    );
+  }
+
+  // Database messages
+  const { data: messages, error } = await supabase
+    .from("messages")
+    .select(`
+      id,
+      content,
+      sender_id,
+      receiver_id,
+      listing_id,
+      created_at,
+      sender:sender_id (
+        full_name,
+        avatar_url,
+        university
+      ),
+      receiver:receiver_id (
+        full_name,
+        avatar_url,
+        university
+      ),
+      listing:listing_id (
+        title,
+        images
+      )
+    `)
+    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching user conversations:", error);
+    return [];
+  }
+
+  const threadsMap = new Map<string, any>();
+  
+  for (const msg of (messages || [])) {
+    const otherId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
+    const key = `${msg.listing_id}:${otherId}`;
+    
+    if (!threadsMap.has(key)) {
+      const otherProfile = msg.sender_id === user.id ? msg.receiver : msg.sender;
+      
+      threadsMap.set(key, {
+        listing_id: msg.listing_id,
+        other_user_id: otherId,
+        listing_title: (msg.listing as any)?.title || "Sublease Room",
+        listing_images: (msg.listing as any)?.images || [],
+        other_user_name: (otherProfile as any)?.full_name || "Student Subletter",
+        other_user_university: (otherProfile as any)?.university || "University Student",
+        other_user_avatar: (otherProfile as any)?.avatar_url || null,
+        latest_message: {
+          id: msg.id,
+          content: msg.content,
+          sender_id: msg.sender_id,
+          receiver_id: msg.receiver_id,
+          created_at: msg.created_at,
+        },
+      });
+    }
+  }
+
+  return Array.from(threadsMap.values());
+}
+
+export async function getUnreadMessagesCount() {
+  const supabase = await createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  let user = authUser;
+  if (!user && process.env.NODE_ENV === "development") {
+    user = {
+      id: "mock-student-id-1234",
+    } as any;
+  }
+
+  if (!user) return 0;
+
+  // Dev mock fallback
+  if (user.id === "mock-student-id-1234" && process.env.NODE_ENV === "development") {
+    const allMsgs = getMockMessagesFromFile();
+    return allMsgs.filter(
+      (msg) => msg.receiver_id === user.id && !msg.read
+    ).length;
+  }
+
+  const { count, error } = await supabase
+    .from("messages")
+    .select("*", { count: "exact", head: true })
+    .eq("receiver_id", user.id)
+    .eq("read", false);
+
+  if (error) {
+    console.error("Error fetching unread messages count:", error);
+    return 0;
+  }
+
+  return count || 0;
 }

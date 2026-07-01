@@ -21,11 +21,25 @@ export default async function ListingDetailPage({
   const searchParamsResolved = await searchParams;
 
   const supabase = await createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  // Development mock user bypass for testing without Google login configured
+  let user = authUser;
+  if (!user && process.env.NODE_ENV === "development") {
+    user = {
+      id: "mock-student-id-1234",
+      email: "mock-student@drexel.edu",
+      full_name: "Mock Student",
+    } as any;
+  }
 
   if (searchParamsResolved.success === "true") {
     // Call database RPC directly on success page load as a robust fallback for local dev webhook testing
     await supabase.rpc("mark_listing_as_reserved", {
       target_listing_id: id,
+      reserver_id: user?.id || null,
     });
   }
 
@@ -54,19 +68,7 @@ export default async function ListingDetailPage({
     );
   }
 
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  // Development mock user bypass for testing without Google login configured
-  let user = authUser;
-  if (!user && process.env.NODE_ENV === "development") {
-    user = {
-      id: "mock-student-id-1234",
-      email: "mock-student@drexel.edu",
-      full_name: "Mock Student",
-    } as any;
-  }
+  // User is already resolved at the top of the function
 
   const isOwner = user?.id === listing.user_id;
   const hasImages = listing.images && listing.images.length > 0;
