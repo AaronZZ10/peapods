@@ -34,7 +34,9 @@ export async function getProfile() {
         email: user.email!,
         full_name: user.user_metadata?.full_name || "PeaPods User",
         university: user.email?.endsWith(".edu") ? "Verified Student" : "Other",
+        avatar_url: user.user_metadata?.avatar_url || null,
         bio: "",
+        is_admin: user.id === "mock-student-id-1234" && process.env.NODE_ENV === "development",
       })
       .select()
       .single();
@@ -44,6 +46,19 @@ export async function getProfile() {
       return null;
     }
     return newProfile;
+  }
+
+  // Auto-sync Google avatar if it is not currently set in our database profile
+  if (!profile.avatar_url && user.user_metadata?.avatar_url) {
+    const { data: updatedProfile } = await supabase
+      .from("profiles")
+      .update({ avatar_url: user.user_metadata.avatar_url })
+      .eq("id", user.id)
+      .select()
+      .single();
+    if (updatedProfile) {
+      return updatedProfile;
+    }
   }
 
   return profile;
