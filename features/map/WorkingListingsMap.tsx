@@ -40,8 +40,7 @@ export default function WorkingListingsMap({
       L.Icon.Default.mergeOptions({
         iconRetinaUrl:
           "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
         shadowUrl:
           "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
@@ -50,9 +49,9 @@ export default function WorkingListingsMap({
       if (!mapInstanceRef.current) {
         const map = L.map(mapRef.current).setView([39.9526, -75.1652], 13);
 
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png", {
           attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         }).addTo(map);
 
         mapInstanceRef.current = map;
@@ -76,7 +75,8 @@ export default function WorkingListingsMap({
           const marker = L.marker([listing.latitude, listing.longitude]).addTo(
             mapInstanceRef.current,
           );
-          marker.bindPopup(`
+          marker.bindPopup(
+            `
             <div style="font-family: sans-serif; padding: 4px; min-width: 200px;">
               <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                 <span style="background: #ecfdf5; color: #059669; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; border: 1px solid #d1fae5;">Student Stay</span>
@@ -85,14 +85,16 @@ export default function WorkingListingsMap({
               <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1.2;">${listing.title}</h3>
               <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 4px;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #059669;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                ${listing.address.split(',')[0]}
+                ${listing.address.split(",")[0]}
               </p>
-              <button style="width: 100%; background: #059669; color: white; border: none; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">View Details</button>
+              <a href="/listings/${listing.id}" style="display: block; text-align: center; text-decoration: none; width: 100%; background: #059669; color: white; border: none; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; box-sizing: border-box;">View Details</a>
             </div>
-          `, {
-            maxWidth: 250,
-            className: 'student-popup'
-          });
+          `,
+            {
+              maxWidth: 250,
+              className: "student-popup",
+            },
+          );
           markersRef.current.push(marker);
         });
       }

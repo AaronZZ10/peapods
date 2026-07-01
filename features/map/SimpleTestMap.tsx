@@ -5,7 +5,7 @@ import { MapContainer, TileLayer } from "react-leaflet";
 
 export default function SimpleTestMap() {
   console.log("SimpleTestMap is rendering!");
-  
+
   return (
     <div style={{ height: "500px", width: "100%" }}>
       <MapContainer

@@ -21,10 +21,24 @@ type Listing = {
 
 interface LazyMapContentProps {
   listings: Listing[];
-  onBoundsChange?: (bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number }) => void;
+  onBoundsChange?: (bounds: {
+    minLat: number;
+    maxLat: number;
+    minLng: number;
+    maxLng: number;
+  }) => void;
 }
 
-function MapBoundsHandler({ onBoundsChange }: { onBoundsChange: (bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number }) => void }) {
+function MapBoundsHandler({
+  onBoundsChange,
+}: {
+  onBoundsChange: (bounds: {
+    minLat: number;
+    maxLat: number;
+    minLng: number;
+    maxLng: number;
+  }) => void;
+}) {
   const map = useMapEvents({
     moveend: () => {
       const bounds = map.getBounds();
@@ -39,7 +53,10 @@ function MapBoundsHandler({ onBoundsChange }: { onBoundsChange: (bounds: { minLa
   return null;
 }
 
-export default function LazyMapContent({ listings, onBoundsChange }: LazyMapContentProps) {
+export default function LazyMapContent({
+  listings,
+  onBoundsChange,
+}: LazyMapContentProps) {
   const defaultCenter: [number, number] = [39.9526, -75.1652];
 
   return (
@@ -55,11 +72,16 @@ export default function LazyMapContent({ listings, onBoundsChange }: LazyMapCont
       {onBoundsChange && <MapBoundsHandler onBoundsChange={onBoundsChange} />}
       <MarkerClusterGroup>
         {listings.map((listing) => (
-          <Marker key={listing.id} position={[listing.latitude, listing.longitude]}>
+          <Marker
+            key={listing.id}
+            position={[listing.latitude, listing.longitude]}
+          >
             <Popup>
               <div>
                 <h3 className="font-bold">{listing.title}</h3>
-                <p className="text-green-600 font-semibold">${listing.price}/mo</p>
+                <p className="text-green-600 font-semibold">
+                  ${listing.price}/mo
+                </p>
                 <p>{listing.address}</p>
                 <p className="text-sm text-gray-600">{listing.description}</p>
               </div>

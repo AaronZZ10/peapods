@@ -57,6 +57,13 @@ export async function createListing(formData: FormData) {
   const address = formData.get("address") as string;
   const startDate = formData.get("startDate") as string;
   const endDate = formData.get("endDate") as string;
+  const imagesJson = formData.get("images") as string;
+  const images = imagesJson ? JSON.parse(imagesJson) : [];
+  
+  if (images.length < 2) {
+    throw new Error("At least 2 images are required to publish a listing.");
+  }
+  
   const { latitude, longitude } = await geocodeAddress(address);
 
   const { error } = await supabase.from("listings").insert({
@@ -68,6 +75,7 @@ export async function createListing(formData: FormData) {
     location: `POINT(${longitude} ${latitude})`,
     start_date: startDate,
     end_date: endDate,
+    images,
   });
 
   if (error) {
@@ -76,6 +84,21 @@ export async function createListing(formData: FormData) {
 
   revalidatePath("/");
   redirect("/");
+}
+
+export async function getListingById(id: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("get_listing_by_id", {
+    listing_id: id,
+  });
+
+  if (error) {
+    console.error("Error fetching listing by ID:", error);
+    return null;
+  }
+
+  return data && data.length > 0 ? data[0] : null;
 }
 
 export async function deleteListing(id: string) {
@@ -98,6 +121,7 @@ export async function deleteListing(id: string) {
   }
 
   revalidatePath("/");
+  redirect("/");
 }
 
 export async function getListings() {

@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, MapPin, User, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 type Listing = {
   id: string;
@@ -27,6 +28,8 @@ type Listing = {
   } | null;
   latitude?: number;
   longitude?: number;
+  images?: string[];
+  reserved?: boolean;
 };
 
 export function ListingCard({
@@ -38,19 +41,34 @@ export function ListingCard({
 }) {
   return (
     <Card className="group overflow-hidden border-slate-200/60 bg-white transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/40 rounded-3xl">
-      {/* Image Placeholder */}
+      {/* Image / Thumbnail */}
       <div className="relative h-48 w-full bg-slate-100 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-100/50 via-slate-100 to-slate-200"></div>
-        <div className="absolute left-4 top-4 flex gap-2">
+        <Link href={`/listings/${listing.id}`} className="block h-full w-full">
+          {listing.images && listing.images.length > 0 ? (
+            <img
+              src={listing.images[0]}
+              alt={listing.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-100/50 via-slate-100 to-slate-200"></div>
+          )}
+        </Link>
+        <div className="absolute left-4 top-4 flex gap-2 pointer-events-none z-10">
           <Badge
             variant="secondary"
             className="bg-white/90 text-emerald-700 hover:bg-white backdrop-blur-md border-none font-bold shadow-sm"
           >
             Student Stay
           </Badge>
+          {listing.reserved && (
+            <Badge className="bg-rose-600 text-white font-extrabold shadow-sm border-none z-10">
+              RESERVED
+            </Badge>
+          )}
         </div>
         {isOwner && (
-          <div className="absolute right-4 top-4">
+          <div className="absolute right-4 top-4 z-10">
             <form action={deleteListing.bind(null, listing.id)}>
               <Button
                 type="submit"
@@ -74,7 +92,9 @@ export function ListingCard({
             <span className="text-sm font-medium text-slate-500">/ mo</span>
           </div>
           <h3 className="text-lg font-bold text-slate-900 group-hover:text-emerald-600 transition-colors line-clamp-1">
-            {listing.title}
+            <Link href={`/listings/${listing.id}`}>
+              {listing.title}
+            </Link>
           </h3>
         </div>
 
@@ -104,7 +124,7 @@ export function ListingCard({
         </div>
       </CardContent>
 
-      <CardFooter className="p-5 pt-0 flex items-center justify-between">
+      <CardFooter className="p-5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center text-xs font-bold text-teal-800 uppercase ring-1 ring-white shadow-sm">
             {(listing.profiles?.full_name || listing.profiles?.email || "A")[0]}
@@ -115,12 +135,12 @@ export function ListingCard({
               "Host"}
           </span>
         </div>
-        <Button
-          variant="ghost"
-          className="h-auto p-0 text-sm font-bold text-emerald-600 hover:text-emerald-700 hover:bg-transparent"
+        <Link
+          href={`/listings/${listing.id}`}
+          className="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
         >
           Details &rarr;
-        </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

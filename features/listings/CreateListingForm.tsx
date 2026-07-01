@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AddressAutocompleteInput } from "@/features/listings/AddressAutocompleteInput";
 import { createListing } from "@/lib/actions/listings";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,6 +20,53 @@ import { PlusCircle, Info, DollarSign, Calendar } from "lucide-react";
 
 export function CreateListingForm() {
   const [open, setOpen] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    setUploading(true);
+    const supabase = createClient();
+    const files = Array.from(e.target.files);
+    const urls: string[] = [...images];
+
+    for (const file of files) {
+      if (urls.length >= 5) {
+        alert("Maximum 5 photos allowed.");
+        break;
+      }
+      try {
+        const ext = file.name.split(".").pop();
+        const fileName = `${crypto.randomUUID()}.${ext}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("listing-images")
+          .upload(filePath, file);
+
+        if (uploadError) {
+          console.error("Upload error details:", uploadError);
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("listing-images")
+          .getPublicUrl(filePath);
+
+        urls.push(publicUrl);
+      } catch (err) {
+        console.error("Error uploading file:", err);
+      }
+    }
+
+    setImages(urls);
+    setUploading(false);
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    setImages(images.filter((_, idx) => idx !== indexToRemove));
+  };
 
   return (
     <Dialog
@@ -27,12 +75,15 @@ export function CreateListingForm() {
       onOpenChange={(nextOpen, eventDetails) => {
         if (
           !nextOpen &&
-          (eventDetails.reason === "outside-press" ||
-            eventDetails.reason === "focus-out")
+          (eventDetails?.reason === "outside-press" ||
+            eventDetails?.reason === "focus-out")
         ) {
           return;
         }
 
+        if (!nextOpen) {
+          setImages([]);
+        }
         setOpen(nextOpen);
       }}
     >
@@ -114,6 +165,63 @@ export function CreateListingForm() {
 
           <AddressAutocompleteInput />
 
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-700">
+              Photos of the Space
+            </label>
+            <div className="border-2 border-dashed border-slate-200 rounded-2xl p-4 text-center hover:border-emerald-500 transition-colors bg-slate-50/50">
+              <input
+                type="file"
+                id="file-upload"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={uploading}
+              />
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer flex flex-col items-center justify-center space-y-2 py-4"
+              >
+                <div className="h-10 w-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                  <PlusCircle className="h-5 w-5" />
+                </div>
+                <span className="text-sm font-bold text-slate-700">
+                  {uploading ? "Uploading..." : "Upload Photos"}
+                </span>
+                <span className="text-xs text-slate-400">
+                  PNG, JPG, JPEG (Min 2, Max 5 photos)
+                </span>
+              </label>
+            </div>
+
+            {images.length > 0 && (
+              <div className="grid grid-cols-5 gap-2 mt-3">
+                {images.map((url, idx) => (
+                  <div
+                    key={idx}
+                    className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200/80 bg-white"
+                  >
+                    <img
+                      src={url}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(idx)}
+                      className="absolute top-1 right-1 h-5 w-5 rounded-full bg-slate-900/80 text-white flex items-center justify-center hover:bg-slate-900 text-[10px] font-bold"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <input type="hidden" name="images" value={JSON.stringify(images)} />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-700 uppercase tracking-tighter text-[10px]">
@@ -153,20 +261,30 @@ export function CreateListingForm() {
             </p>
           </div>
 
-          <div className="pt-4 border-t flex justify-end gap-3">
-            <DialogClose
-              render={
-                <Button variant="ghost" className="rounded-full">
-                  Cancel
-                </Button>
-              }
-            />
-            <Button
-              type="submit"
-              className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-8"
-            >
-              Publish Listing
-            </Button>
+          <div className="pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-left w-full sm:w-auto">
+              {images.length < 2 && (
+                <p className="text-xs text-rose-500 font-semibold leading-tight">
+                  ⚠️ Minimum 2 photos required to publish.
+                </p>
+              )}
+            </div>
+            <div className="flex gap-3 justify-end w-full sm:w-auto">
+              <DialogClose
+                render={
+                  <Button variant="ghost" className="rounded-full">
+                    Cancel
+                  </Button>
+                }
+              />
+              <Button
+                type="submit"
+                disabled={uploading || images.length < 2}
+                className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-8 disabled:bg-slate-200 disabled:text-slate-400"
+              >
+                {uploading ? "Uploading..." : "Publish Listing"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

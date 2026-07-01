@@ -66,3 +66,45 @@
     @apply border-border;
   }
 }
+
+/* Scale down Leaflet's z-index stack and isolate its elements to prevent overlapping dialogs and headers */
+.leaflet-container {
+  z-index: 1 !important;
+  isolation: isolate !important;
+}
+.leaflet-pane {
+  z-index: 2 !important;
+}
+.leaflet-tile-pane {
+  z-index: 2 !important;
+}
+.leaflet-overlay-pane {
+  z-index: 3 !important;
+}
+.leaflet-shadow-pane {
+  z-index: 4 !important;
+}
+.leaflet-marker-pane {
+  z-index: 5 !important;
+}
+.leaflet-tooltip-pane {
+  z-index: 6 !important;
+}
+.leaflet-popup-pane {
+  z-index: 7 !important;
+}
+.leaflet-control {
+  z-index: 8 !important;
+}
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 9 !important;
+}
+
+/* Enforce Dialog overlay and popup container z-indexes globally */
+[data-slot="dialog-overlay"],
+[data-slot="dialog-content"],
+[data-slot="dialog-portal"] {
+  z-index: 99999 !important;
+}
+

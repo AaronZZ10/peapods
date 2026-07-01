@@ -1,0 +1,18 @@
+[
+  {
+    "id": "msg-f7vgrke",
+    "listing_id": "940e6a85-d3c4-4947-a004-e0b6c2ed236a",
+    "sender_id": "mock-student-id-1234",
+    "receiver_id": "08867d9e-be57-40df-a141-47b6e01b4eaa",
+    "content": "I am interested in subleasing.",
+    "created_at": "2026-07-01T05:48:27.564Z"
+  },
+  {
+    "id": "msg-78ux83s",
+    "listing_id": "940e6a85-d3c4-4947-a004-e0b6c2ed236a",
+    "sender_id": "mock-student-id-1234",
+    "receiver_id": "08867d9e-be57-40df-a141-47b6e01b4eaa",
+    "content": "Hi, is this room still available for July?",
+    "created_at": "2026-07-01T15:33:43.488Z"
+  }
+]
